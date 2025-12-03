@@ -64,4 +64,49 @@ def computer_move():
 
 # SHOW BOARD
 st.write("Board:")
-display = st.sessi
+display = st.session_state.board.astype(str)
+display = np.where(display == "0", "⚪", display)
+display = np.where(display == "1", "🔴", display)
+display = np.where(display == "2", "🟡", display)
+
+for row in display:
+    st.write(" ".join(row))
+
+st.write("---")
+
+# HUMAN TURN
+if st.session_state.winner is None and st.session_state.turn == 1:
+    col_choice = st.selectbox("Choose a column (0-6):", list(range(COLS)))
+    if st.button("Drop Piece"):
+        if drop_piece(st.session_state.board, col_choice, 1):
+            if check_winner(st.session_state.board, 1):
+                st.session_state.winner = "🎉 Human Wins!"
+            else:
+                st.session_state.turn = 2
+        else:
+            st.warning("Column is full. Try another.")
+
+
+# COMPUTER TURN
+if st.session_state.winner is None and st.session_state.turn == 2:
+    st.write("Computer is thinking...")
+    computer_move()
+
+    if check_winner(st.session_state.board, 2):
+        st.session_state.winner = "🤖 Computer Wins!"
+    else:
+        st.session_state.turn = 1
+
+    st.rerun()
+
+
+# RESULT
+if st.session_state.winner:
+    st.header(st.session_state.winner)
+
+# RESET BUTTON
+if st.button("Reset Game"):
+    st.session_state.board = np.zeros((ROWS, COLS), dtype=int)
+    st.session_state.turn = 1
+    st.session_state.winner = None
+    st.rerun()
